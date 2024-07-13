@@ -1,0 +1,58 @@
+// ==UserScript==
+// @name         Simple Nitro Type Auto Typer
+// @namespace    http://tampermonkey.net/
+// @version      0.1
+// @description  try to take over the world!
+// @author       You
+// @match        https://www.nitrotype.com/race
+// @grant        none
+// ==/UserScript==
+
+(function() {
+    'use strict';
+
+    // Set your desired WPM (Words Per Minute)
+    const wpm = 120;
+
+    // Function to simulate a delay
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    // Function to type the words
+    async function typeWords(words) {
+        const wordsArray = words.split(' ');
+        const delay = (60 / wpm) * 1000; // Delay between words based on WPM
+
+        for (const word of wordsArray) {
+            for (const char of word) {
+                document.dispatchEvent(new KeyboardEvent('keydown', { key: char }));
+                await sleep(50); // Small delay between characters
+            }
+            document.dispatchEvent(new KeyboardEvent('keydown', { key: ' ' })); // Space after each word
+            await sleep(delay); // Delay between words
+        }
+    }
+
+    // Function to extract the typing text from the page
+    function getTypingText() {
+        const typingTextElement = document.querySelector('.dash-letter');
+        if (typingTextElement) {
+            return typingTextElement.innerText;
+        }
+        return null;
+    }
+
+    // Main function to start the typing process
+    async function startTyping() {
+        let typingText = getTypingText();
+        while (!typingText) {
+            await sleep(1000); // Wait for the typing text to appear
+            typingText = getTypingText();
+        }
+        await typeWords(typingText);
+    }
+
+    // Start the typing process when the race starts
+    window.addEventListener('load', startTyping);
+})();
